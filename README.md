@@ -1,6 +1,7 @@
 # MCPToolBench++: AI Agent MCP Model Context Protocol MCP Tool Use Benchmark
 
 [![MCP Marketplace User Review Rating Badge](https://www.deepnlp.org/api/marketplace/svg?name=mcp-tool-bench/mcptoolbenchpp)](https://www.deepnlp.org/store/ai-agent/benchmark/pub-mcp-tool-bench/mcptoolbenchpp)
+[![AI Agent Marketplace DeepNLP](https://www.deepnlp.org/api/ai_agent_marketplace/svg?name=mcp-tool-bench/mcptoolbenchpp)](https://www.deepnlp.org/store/ai-agent/benchmark/pub-mcp-tool-bench/mcptoolbenchpp) 
 
 MCPToolBench++ is a large-scale, multi-domain AI Agent Tool Use Benchmark. As of June 2025, this benchmark includes over 4k+ MCP Servers from more than 45 categories collected from the MCP and GitHub communities. The dataset comprises both single-step and multi-step tool calls across different categories. And we evaluated some SOTA Agent LLMs and RAG-Based Systems. 
 
