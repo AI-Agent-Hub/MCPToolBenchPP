@@ -10,18 +10,166 @@ Notice: This repo benchmark is still WIP and more domain dataset will be release
 
 ## Performance Leaderboard
 
-|     | Browser |      | Map |      | Search | |
+|     | Browser |      | File System |      | Search | |
 | --- | ------  | ---- | ----| ---- |  --- | ---  |
 |     | AST | Pass@1 | AST | Pass@1 |  AST | Pass@1  |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
-| GPT4o | - | - | - | - | - | - |
-| Claude Sonnet 3.7| - | - | - | - | - | - |
-| Qwen3 Max | - | - | - | - | - | - |
-| Qwen2.5 Max | - | - | - | - | - | - |
+| GPT4o | - | - | 0.8863 | 0.8232 | - | - |
+| Claude Sonnet 3.7| - | - | 0.8415 | 0.8183 | - | - |
+| Qwen3 Max | - | - | 0.9419 | 0.8871 | - | - |
+| Qwen3 Coder | - | - | - | - | - | - |
+| Kimi K2 Instruct | - | - | - | - | - | - |
 
 
-## Use the Benchmark
+|     | Map |      | Pay |      | Finance | |
+| --- | ------  | ---- | ----| ---- |  --- | ---  |
+|     | AST | Pass@1 | AST | Pass@1 |  AST | Pass@1  |
+| Claude Opus 4 | - | - | - | - | - | - |
+| Claude Sonnet 4 | - | - | - | - | - | - |
+| GPT4o | - | - | 0.7077 | 0.5742 | - | - |
+| Claude Sonnet 3.7| - | - | 0.7058 | 0.5574 | - | - |
+| Qwen3 Max | - | - | 0.6684 | 0.5277 | - | - |
+| Qwen3 Coder | - | - | - | - | - | - |
+| Kimi K2 Instruct | - | - | - | - | - | - |
+
+
+## Introduction
+
+### 1. Browser
+
+The browser subset evaluates models' ability to use the web browser, typical tools include puppeteer_navigate, puppeteer_screenshot,  puppeteer_click, playwright_screenshot, playwright_navigate, etc. Agent models call the tools to nagivate to the URL, visit page, click on buttons, take screenshot of the webpage, etc.
+
+
+```
+Navigate to the Wikipedia website using the Chromium browser and check its accessibility.
+```
+
+#### Run Dataset
+
+```
+## Test Run 1 instance
+python3 run.py --stage tool_call --input_file ./data/browser/browser_single_demo.json --category browser --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+## Run the Dataset
+python3 run.py --stage tool_call --input_file ./data/browser/browser_0713_single.json --category browser --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+```
+
+
+### 2. File System
+
+The file system mcp helps to manage your local file and directories, typical tools include: read_file/edit_File/list_directory_with_sizes/etc.
+
+```
+Read the contents of the files located at ./test_project_root/src/main.py and ./test_project_root/docs/README.md at the same time.
+
+Provide a recursive tree view of the files and directories located at ./test_project_root/src.
+```
+
+
+#### Run Dataset
+
+```
+## Test Run 1 instance
+python3 run.py --stage tool_call --input_file ./data/file_system/filesystem_0723_demo.json --category filesystem --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+## Run the Dataset
+python3 run.py --stage tool_call --input_file ./data/file_system/filesystem_0723_single.json --category filesystem --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+```
+
+
+### 3. Search
+
+The search mcp tools helps to search the web given user's query, typical servers and tools include google-web-search, google-image-search, tavily-search, tavily-extract, firecrawl-search, etc.
+
+
+```
+Find latest AI LLM and Agents related news on the web
+```
+
+
+#### Run Dataset
+
+```
+
+```
+
+
+### 4. Map
+
+
+```
+# english
+What is the current weather in Tokyo and the weather forecast for the next 5 days?
+Find popular Japanese restaurants in Houston.
+
+# french
+¿Cuál es la mejor ruta para ir en bicicleta desde Tokio hasta la Torre de Tokio?
+# russian
+Каковы координаты адреса Санкт-Петербург, Невский проспект, 1?
+
+```
+
+```
+## Test Run 1 instance
+python3 run.py --stage tool_call --input_file ./data/map/map_0717_single_demo.json --category map --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+## Run the Dataset
+python3 run.py --stage tool_call --input_file ./data/map/map_0717_single_multi_lang_500.json --category map --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+```
+
+
+### 5. Pay
+
+The pay subdataset evaluates pay related MCP servers(paypal/alipay/etc), typical tools include create_invoice, create_products, etc.
+
+Data Instance
+```
+Create an invoice for Tech Solutions Inc. for a Consultation Service costing 150.00 USD.
+```
+
+#### Setup
+
+The paypal and alipay MCPs are free to use, but you needs to register and setup paypal/alipay sandbox access_key with development account and setup config in mcp-marketplace UI.
+
+#### Run Dataset
+
+```
+## Test Run 1 instance
+python3 run.py --stage tool_call --input_file ./data/pay/pay_0723_single_demo.json --category pay --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+## Run the Dataset
+python3 run.py --stage tool_call --input_file ./data/pay/pay_0723_single.json --category pay --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+```
+
+
+
+### 6. Finance
+
+Data Instance
+```
+What is the current stock price of Tesla in the US market?
+What is the current stock price and market capitalization of Shell in the London Stock Exchange market?
+```
+
+
+#### Run Dataset
+
+```
+## Test Run 1 instance
+python3 run.py --stage tool_call --input_file ./data/finance/finance_single_demo.json --category finance --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+## Run the Dataset
+python3 run.py --stage tool_call --input_file ./data/finance/finance_0716_single_v2.json --category finance --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+```
+
+
+## Detail Tutorial How To Use the Benchmark
 
 ### 0. Setup
 
