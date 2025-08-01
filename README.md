@@ -13,24 +13,23 @@ Notice: This repo benchmark is still WIP and more domain dataset will be release
 |     | Browser |      | File System |      | Search | |
 | --- | ------  | ---- | ----| ---- |  --- | ---  |
 |     | AST | Pass@1 | AST | Pass@1 |  AST | Pass@1  |
-| GPT4o | 0.6524 | 0.2182 | 0.8863 | 0.8232 | 0.5280 | 0.4960 |
-| Qwen3 Max | 0.7262  | 0.2749 | 0.9419 | 0.8871 | 0.5240 | 0.3760 |
-| Claude Sonnet 3.7 | 0.6503 | 0.1840 | 0.8415 | 0.8183 | 0.4400 | 0.3280 |
+| GPT4o | 0.6524  |  0.2182 | 0.8863 | 0.8232 | 0.5200 | 0.4720 |
+| Qwen3 Max | 0.7262 | 0.2749 | 0.9419 | 0.8871 | 0.6280 | 0.4600 |
+| Claude Sonnet 3.7 | 0.6503 | 0.1840 | 0.8415 | 0.8183 | 0.7280 | 0.6200 |
+| Kimi K2 Instruct | 0.8182 | 0.2524 | 0.9062 | 0.8772 | 0.7320 | 0.3680 |
 | Qwen3 Coder | - | - | - | - | - | - |
-| Kimi K2 Instruct | - | - | - | - | - | - |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
-
 
 
 |     | Map |      | Pay |      | Finance | |
 | --- | ------  | ---- | ----| ---- |  --- | ---  |
 |     | AST | Pass@1 | AST | Pass@1 |  AST | Pass@1  |
-| GPT4o | 0.6120  |  0.3616 | 0.7077 | 0.5742 | 0.7200 | 0.2889 |
-| Qwen3 Max | 0.4552 | 0.0984 | 0.6684 | 0.5277 | 0.7511 | 0.2556 |
-| Claude Sonnet 3.7 | 0.5820  |  0.2748 | 0.7058 | 0.5574 | 0.7400 | 0.2311 |
+| GPT4o | 0.6120 | 0.3616 | 0.7077 | 0.5742 | 0.7200 | 0.2889 |
+| Qwen3 Max | 0.7372 | 0.2272 | 0.6684 | 0.5277 | 0.7511 | 0.2556 |
+| Claude Sonnet | 0.5820 | 0.2748 | 0.7058 | 0.5574 | 0.7400 | 0.2311 |
+| Kimi K2 Instruct | 0.6088 | 0.2008 | 0.8071 | 0.6761 | 0.7156 | 0.2378 |
 | Qwen3 Coder | - | - | - | - | - | - |
-| Kimi K2 Instruct | - | - | - | - | - | - |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
 
@@ -64,14 +63,14 @@ See [Browser Use MCP Setup](#1-browser-use-mcp-setup) for how to setup and start
 
 #### Run Dataset
 
-After setup the servers for tool call details, Run below command
+Once the servers are started, run below command to start evaluation.
 
 ```
 ## Test Run 1 instance
 python3 run.py --stage tool_call --input_file ./data/browser/browser_single_demo.json --category browser --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ## Run the Dataset
-python3 run.py --stage tool_call --input_file ./data/browser/browser_0713_single.json --category browser --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+python3 run.py --stage tool_call --input_file ./data/browser/browser_0724_single_v3.json --category browser --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ```
 
@@ -95,7 +94,7 @@ See [File System MCP Setup](#2-file-system-mcp-setup) for how to setup and run M
 
 ```
 ## Test Run 1 instance
-python3 run.py --stage tool_call --input_file ./data/file_system/filesystem_0723_demo.json --category filesystem --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+python3 run.py --stage tool_call --input_file ./data/file_system/filesystem_single_demo.json --category filesystem --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ## Run the Dataset
 python3 run.py --stage tool_call --input_file ./data/file_system/filesystem_0723_single.json --category filesystem --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
@@ -105,6 +104,11 @@ python3 run.py --stage tool_call --input_file ./data/file_system/filesystem_0723
 
 ### 3. Search
 
+
+```
+Find latest AI LLM and Agents related news on the web
+```
+
 The search mcp tools helps to search the web given user's query, typical servers and tools include google-web-search, google-image-search, tavily-search, tavily-extract, firecrawl-search, etc.
 
 
@@ -112,20 +116,26 @@ The search mcp tools helps to search the web given user's query, typical servers
 See [Search MCP Setup](#3-search-mcp-setup) for how to setup and run MCP servers
 
 
-```
-Find latest AI LLM and Agents related news on the web
-```
-
 
 #### Run Dataset
 
 ```
+## Test Run 1 instance
+python3 run.py --stage tool_call --input_file ./data/search/search_single_demo.json --category search --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
+
+## Run the Dataset
+### Note Qwen doesn't allow tool to be named 'search'
+python3 run.py --stage tool_call --input_file ./data/search/search_0725_single_v2_forqwen.json --category search --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+
+python3 run.py --stage tool_call --input_file ./data/search/search_0725_single_v2.json --category search --model gpt4o --pass_k 1,3 --evaluation_trial_per_task 5
 
 ```
 
 
 ### 4. Map
+
+Map Subsets support multilingual queries to search places and routes.
 
 
 ```
@@ -135,6 +145,7 @@ Find popular Japanese restaurants in Houston.
 
 # french
 ¿Cuál es la mejor ruta para ir en bicicleta desde Tokio hasta la Torre de Tokio?
+
 # russian
 Каковы координаты адреса Санкт-Петербург, Невский проспект, 1?
 
@@ -146,7 +157,7 @@ See [Map MCP Setup](#4-map-mcp-setup) for how to setup and run MCP servers
 
 ```
 ## Test Run 1 instance
-python3 run.py --stage tool_call --input_file ./data/map/map_0717_single_demo.json --category map --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+python3 run.py --stage tool_call --input_file ./data/map/map_single_demo.json --category map --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ## Run the Dataset
 python3 run.py --stage tool_call --input_file ./data/map/map_0717_single_multi_lang_500.json --category map --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
@@ -158,7 +169,6 @@ python3 run.py --stage tool_call --input_file ./data/map/map_0717_single_multi_l
 
 The pay subdataset evaluates pay related MCP servers(paypal/alipay/etc), typical tools include create_invoice, create_products, etc.
 
-Data Instance
 ```
 Create an invoice for Tech Solutions Inc. for a Consultation Service costing 150.00 USD.
 ```
@@ -174,7 +184,7 @@ See [Pay MCP Setup](#5-pay-mcp-setup) for how to setup and run MCP servers
 
 ```
 ## Test Run 1 instance
-python3 run.py --stage tool_call --input_file ./data/pay/pay_0723_single_demo.json --category pay --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+python3 run.py --stage tool_call --input_file ./data/pay/pay_single_demo.json --category pay --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ## Run the Dataset
 python3 run.py --stage tool_call --input_file ./data/pay/pay_0723_single.json --category pay --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
@@ -185,7 +195,6 @@ python3 run.py --stage tool_call --input_file ./data/pay/pay_0723_single.json --
 
 ### 6. Finance
 
-Data Instance
 ```
 What is the current stock price of Tesla in the US market?
 What is the current stock price and market capitalization of Shell in the London Stock Exchange market?
@@ -203,7 +212,7 @@ See [Finance MCP Setup](#6-finance-mcp-setup) for how to setup and run MCP serve
 python3 run.py --stage tool_call --input_file ./data/finance/finance_single_demo.json --category finance --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ## Run the Dataset
-python3 run.py --stage tool_call --input_file ./data/finance/finance_0716_single_v2.json --category finance --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
+python3 run.py --stage tool_call --input_file ./data/finance/finance_0724_single_v3.json --category finance --model qwen3-max --pass_k 1,3 --evaluation_trial_per_task 5
 
 ```
 
@@ -220,15 +229,15 @@ Clone the repo https://github.com/mcp-tool-bench/MCPToolBenchPP
 git clone https://github.com/mcp-tool-bench/MCPToolBenchPP
 
 ## clone the mcp client to execute tool call
-cd ./mcp
-## path: ./mcp/mcp-marketplace
+cd ./MCPToolBenchPP/mcp
+## path: ./MCPToolBenchPP/mcp/mcp-marketplace
 git clone https://github.com/AI-Agent-Hub/mcp-marketplace
 ```
 
 #### Setup Env Keys
 Edit .env file
 ```
-cd ./MCPToolBenchPP
+# ./MCPToolBenchPP/.env
 vim .env
 ```
 
@@ -240,7 +249,7 @@ GOOGLE_API_KEY=...
 MISTRAL_API_KEY=...
 ```
 
-#### Setup Client MCP Marketplace Admin and start Servers
+#### Setup Client MCP Marketplace Admin and Start Servers
 
 You need to install requirements and follow the steps in https://github.com/AI-Agent-Hub/mcp-marketplace
 
@@ -249,15 +258,19 @@ cd ./mcp/mcp-marketplace/app/mcp_tool_use
 uvicorn src.app:app --port 5000
 ```
 
-Change Configuration start all servers from mcp_config.json when starting the server
-```
-# edit ./mcp/mcp-marketplace/app/mcp_tool_use/src/constants.py
 
+
+Change Configuration during initialization MCP_INIT_AUTO_ENABLE=True to Start all servers from mcp_config.json
+
+edit ./mcp/mcp-marketplace/app/mcp_tool_use/src/constants.py
+
+```
 MCP_INIT_AUTO_ENABLE=True
+```
 
 Manage the MCP Configs Started at ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/mcp_config.json
 Visit http://127.0.0.1:5000/mcp to see started servers and edit config 
-```
+
 
 ### 1. Run Evaluation 
 
@@ -355,10 +368,10 @@ Assistant:  Run MCP Tools  playwright_navigate(url = "https://www.wikipedia.org"
 ### 1. Browser Use MCP Setup
 
 
-|  Cateogry | MCP Server | Github | Config and Tool Schema Files Download  |
+|  Cateogry | MCP Server | Website | Config and Tool Schema Files Download  |
 | ---- | ---- | ---- | ---- |
-| Browser | puppeteer/puppeteer  | [Github](https://github.com/modelcontextprotocol/servers-archived/tree/main/src/puppeteer) | puppeteer_navigate,puppeteer_screenshot,puppeteer_click,etc, Visit [mcp marketplace](https://www.deepnlp.org/store/mcp-server/browser/pub-puppeteer/puppeteer) to download tool schema |
-| Browser |  executeautomation/mcp-playwright  | [Github](https://github.com/executeautomation/mcp-playwright) | playwright_navigate,playwright_screenshot,etc. Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-executeautomation/mcp-playwright) to download tool schema  |
+| Browser | puppeteer/puppeteer  | [Github](https://github.com/modelcontextprotocol/servers-archived/tree/main/src/puppeteer) | puppeteer_navigate,puppeteer_screenshot,puppeteer_click,etc, Visit [puppeteer mcp marketplace](https://www.deepnlp.org/store/mcp-server/browser/pub-puppeteer/puppeteer) to download tool schema |
+| Browser |  executeautomation/mcp-playwright  | [Github](https://github.com/executeautomation/mcp-playwright) | playwright_navigate,playwright_screenshot,etc. Visit more tools at [playwright mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-executeautomation/mcp-playwright) to download tool schema  |
 
 #### Setup and merge the config
 
@@ -395,7 +408,7 @@ vim ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/category/mcp_config_b
 ```
 
 
-#### Start Server and Curl if Starts Correctly
+#### Start Server and Curl if Setup
 
 Restart the Server 
 
@@ -403,13 +416,15 @@ Restart the Server
 uvicorn src.app:app --port 5000
 ```
 
-Visit http://localhost:5000/mcp and nable the servers In the Admin Page
+Visit http://localhost:5000/mcp and enable the servers In the Admin Page
 On MCP Admin Page, Start the browser servers, including puppeteer, playwright, etc.
 
 ![MCP Marketplace Browser](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/image_browser_puppeteer.jpg)
 
 
 Then curl if Rest API is Available
+
+
 
 
 Endpoint: http://127.0.0.1:5000/api/query
@@ -434,9 +449,10 @@ Result
 ### 2 File System Mcp Setup
 
 
-|  Cateogry | MCP Server | Tools | Config and Tool Schema Files Download  |
+|  Cateogry | MCP Server | Website | Config and Tool Schema Files Download  |
 | ---- | ---- | ---- | ---- |
-| File System | filesystem  | https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem | read_file,read_multiple_files,edit_file,list_directory,etc,Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/file/pub-filesystem/filesystem) |
+| File System | filesystem  | [Github](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) | read_file,read_multiple_files,edit_file,list_directory,etc,Visit more tools at [filesystem mcp marketplace](https://www.deepnlp.org/store/mcp-server/file/pub-filesystem/filesystem) |
+
 
 
 Create a workspace folder to run local file systems
@@ -471,6 +487,10 @@ vim ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/mcp_config.json
 
 ```
 
+#### Start Server and Curl if Setup
+
+![MCP Marketplace File System](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/image_filesystem.jpg)
+
 
 Endpoint: http://127.0.0.1:5000/api/query
 ```
@@ -484,7 +504,6 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 Result
-```
 
 ```
 
@@ -492,7 +511,7 @@ Success:
 [
   "[FILE] .DS_Store\n[FILE] .env\n[FILE] .env.example\n[FILE] README.md\n[DIR] data\n[DIR] dev\n[DIR] docs\n[FILE] document.md\n[FILE] log\n[FILE] requirements.txt\n[FILE] run_mcp_tool_use.sh\n[DIR] src\n[DIR] test_project_root\n[DIR] tests\n[DIR] web"
 ]
-
+```
 
 ### 3. Search MCP Setup
 
@@ -503,14 +522,16 @@ Some Tool such as Google Custom Search API have free quota API calls enough to r
 
 |  Cateogry | MCP Server | Github | Config and Tool Schema Files Download  |
 | ---- | ---- | ---- | ---- |
-| Search |  tavily/mcp_tavily-mcp | https://github.com/tavily-ai/tavily-mcp  | tavily-search,tavily-extract,tavily-crawl,etc  , Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-tavily-ai/tavily-mcp) |
-| Search |  mendableai/firecrawl-mcp-server  | https://github.com/mendableai/firecrawl-mcp-server  |   firecrawl_search,firecrawl_scrape,firecrawl_map,firecrawl_crawl,etc,  Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/file/pub-mendableai/firecrawl-mcp-server) |
-| Search |  adenot/mcp-google-search  |  https://github.com/adenot/mcp-google-search | search,read_webpage, Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-adenot/mcp-google-search)  |
-| Search |  leehanchung/bing-search-mcp  |  https://github.com/leehanchung/bing-search-mcp  | bing_web_search,bing_news_search,bing_image_search , Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-leehanchung/bing-search-mcp)  |
-| Search |  brave-search/brave-search  | https://github.com/modelcontextprotocol/servers-archived/tree/main/src/brave-search  |  brave_web_search,brave_local_search, Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/ai-agent/mcp-server/pub-brave-search/brave-search)  |
+| Search |  tavily/mcp_tavily-mcp | https://github.com/tavily-ai/tavily-mcp  | tavily-search,tavily-extract,tavily-crawl,etc  , Visit more tools at [tavily search mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-tavily-ai/tavily-mcp) |
+| Search |  mendableai/firecrawl-mcp-server  | https://github.com/mendableai/firecrawl-mcp-server  |   firecrawl_search,firecrawl_scrape,firecrawl_map,firecrawl_crawl,etc,  Visit more tools at [firecrawl mcp marketplace](https://www.deepnlp.org/store/mcp-server/file/pub-mendableai/firecrawl-mcp-server) |
+| Search |  adenot/mcp-google-search  |  https://github.com/adenot/mcp-google-search | search,read_webpage, Visit more tools at [google search mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-adenot/mcp-google-search)  |
+| Search |  leehanchung/bing-search-mcp  |  https://github.com/leehanchung/bing-search-mcp  | bing_web_search,bing_news_search,bing_image_search , Visit more tools at [bing search mcp marketplace](https://www.deepnlp.org/store/mcp-server/mcp-server/pub-leehanchung/bing-search-mcp)  |
+| Search |  brave-search/brave-search  | https://github.com/modelcontextprotocol/servers-archived/tree/main/src/brave-search  |  brave_web_search,brave_local_search, Visit more tools at [brave search mcp marketplace](https://www.deepnlp.org/store/ai-agent/mcp-server/pub-brave-search/brave-search)  |
 
 
 vim ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/category/mcp_config_search.json
+
+Or manage mcp_config.json on local ui
 
 ```
 {
@@ -566,37 +587,185 @@ vim ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/category/mcp_config_s
 
 ```
 
+#### Start Server and Curl if Setup
+
+![MCP Marketplace Search](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/image-google-search.jpg)
+
+
+
+Endpoint: http://127.0.0.1:5000/api/query
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "server_id": "google-search",
+    "tool_name": "search",
+    "tool_input": {
+        "query": "AI News"
+    }
+}' http://127.0.0.1:5000/api/query
+```
+
+Result
+
+```
+{"success":true,"data":["[\n  {\n    \"title\": \"AI News | Latest AI News, Analysis & Events\",\n    \"link\": \"https://www.artificialintelligence-news.com/\",\n    \"snippet\": \"Google's Veo 3 AI video creation tools are now widely available · China doubles chooses AI self-reliance amid intense US competition · Forget the Turing Test, ...\"\n  },\n  {\n    \"title\": \"Artificial Intelligence (AI)\",\n    \"link\": \"https://www.reddit.com/r/artificial/\",\n    \"snippet\": \"... AI is rapidly eroding the photo editing skill barrier. News · https://www.theverge.com/news/715073/adobe-photoshop-ai-harmonize-composite-editing-feature · r ...\"\n  },\n  {\n    \"title\": \"AINews | AINews\",\n    \"link\": \"https://news.smol.ai/\",\n    \"snippet\": \"We summarize top AI discords + AI reddits + AI X/Twitters, and send you a roundup each day! \\\"Highest-leverage 45 mins I spend everyday\\\" - Soumith\"\n  },\n  {\n    \"title\": \"AI News & Artificial Intelligence | TechCrunch\",\n    \"link\": \"https://techcrunch.com/category/artificial-intelligence/\",\n    \"snippet\": \"News coverage on artificial intelligence and machine learning tech, the companies building them, and the ethical issues AI raises today.\"\n  },\n  {\n    \"title\": \"Amazon deploys over 1 million robots and launches new AI ...\",\n    \"link\": \"https://www.aboutamazon.com/news/operations/amazon-million-robots-ai-foundation-model\",\n    \"snippet\": \"Jun 30, 2025 ... New AI technology will make the world's largest fleet of ... News · Operations. Amazon launches a new AI foundation model to power ...\"\n  }\n]"],"error":null}
+```
 
 
 ### 4. Map MCP Setup
 
-|  Cateogry | MCP Server | Github | Config and Tool Schema Files Download  |
+|  Cateogry | MCP Server | Website | Config and Tool Schema Files Download  |
 | ---- | ---- | ---- | ---- |
-| Map |  google-map |  -  | maps_direction_bicycling,maps_direction_driving,maps_direction_transit_integrated,etc , Visit more tools at [mcp marketplace](https://deepnlp.org/store/mcp-server/map/pub-google-maps/google-maps) |
-| Map |  amap-amap-sse/amap-amap-sse |  -  | maps_direction_bicycling,maps_direction_driving,maps_direction_transit_integrated,etc, Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/map/pub-amap-mcp/amap-mcp-%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE-mcp) |
-| Map |  baidu-map | -  | maps_direction_bicycling,maps_direction_driving,maps_direction_transit_integrated,etc, Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/map/pub-baidu-map/baidu-map-mcp-%E7%99%BE%E5%BA%A6%E5%9C%B0%E5%9B%BE-mcp-server) |
+| Map |  google-map |  [Github](https://github.com/modelcontextprotocol/servers-archived/tree/main/src/google-maps)  | maps_direction_bicycling,maps_direction_driving,maps_direction_transit_integrated,etc , Visit more tools at [google map mcp marketplace](https://www.deepnlp.org/store/mcp-server/map/pub-google-maps/google-maps) |
+| Map |  amap-amap-sse/amap-amap-sse |  -  | maps_direction_bicycling,maps_direction_driving,maps_direction_transit_integrated,etc, Visit more tools at [Gaode Amap MCP at mcp marketplace](https://www.deepnlp.org/store/mcp-server/map/pub-amap-mcp/amap-mcp-%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE-mcp) |
+| Map |  baidu-map | -  | maps_direction_bicycling,maps_direction_driving,maps_direction_transit_integrated,etc, Visit more tools at [baidu map mcp marketplace](https://www.deepnlp.org/store/mcp-server/map/pub-baidu-map/baidu-map-mcp-%E7%99%BE%E5%BA%A6%E5%9C%B0%E5%9B%BE-mcp-server) |
 
+
+```mcp_config.json
+{
+  "mcpServers": {
+    "google-maps": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-google-maps"],
+        "env": {
+                "GOOGLE_MAPS_API_KEY": "<YOUR_API_KEY>"
+        }
+    },
+    "amap-amap-sse": {
+        "url": "https://mcp.amap.com/sse?key=<your_api_key>"
+    },
+    "baidu-maps-sse": {
+      "url": "https://mcp.map.baidu.com/sse?ak=<your_api_key>"
+    },
+    "baidu-map": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@baidumap/mcp-server-baidu-map"
+            ],
+            "env": {
+                "BAIDU_MAP_API_KEY": "<your_api_key>"
+            }
+    }
+  }
+}
+
+```
+
+#### Start Server and Curl if Setup
+
+![MCP Marketplace Search](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/image_google_map_server.jpg)
+
+
+Endpoint: http://127.0.0.1:5000/api/query
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "server_id": "google-maps",
+    "tool_name": "maps_search_places",
+    "tool_input": {
+        "query": "Times Square, New York"
+    }
+}' http://127.0.0.1:5000/api/query
+```
+
+Result
+
+```
+```
 
 
 ### 5. Pay MCP Setup
 
-|  Cateogry | MCP Server | Github | Config and Tool Schema Files Download  |
+|  Cateogry | MCP Server | Website | Config and Tool Schema Files Download  |
 | ---- | ---- | ---- | ---- |
-| Pay |  paypal |  -  |  create_invoice,create_product,etc, Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/payment/pub-paypal/paypal) |
-| Pay |  alipay |  -  |  create-mobile-alipay-payment,etc, Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/payment/pub-alipay/alipay-mcp-server-%E6%94%AF%E4%BB%98%E5%AE%9D-mcp-server) |
+| Pay |  paypal |  [Paypal MCP](https://www.paypal.ai/docs/tools/mcp-quickstart)  |  create_invoice,create_product,etc, Visit more tools at [paypal mcp marketplace](https://www.deepnlp.org/store/mcp-server/payment/pub-paypal/paypal) |
+| Pay |  alipay |  - |  create-mobile-alipay-payment,etc, Visit more tools at [alipay mcp marketplace](https://www.deepnlp.org/store/mcp-server/payment/pub-alipay/alipay-mcp-server-%E6%94%AF%E4%BB%98%E5%AE%9D-mcp-server) |
 
 
 ```
 
+{
+    "mcpServers": {
+        "mcp-server-alipay": {
+            "command": "npx",
+            "args": ["-y", "@alipay/mcp-server-alipay"],
+            "env": {
+              "AP_APP_ID": "your_api_id",
+              "AP_APP_KEY": "your_key",
+              "AP_PUB_KEY": "your_ap_pub_key",
+              "AP_RETURN_URL": "https://github.com/modelcontextprotocol/servers",
+              "AP_NOTIFY_URL": "https://github.com/modelcontextprotocol/servers"
+            },
+            "disable": false,
+            "autoApprove": []
+        },
+        "paypal": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@paypal/mcp",
+              "--tools=all"
+            ],
+            "env": {
+              "PAYPAL_ACCESS_TOKEN": "your_paypal_acess_token",
+              "PAYPAL_ENVIRONMENT": "SANDBOX"
+            }
+        }  
+    }
+}
+
+
 ```
 
+#### Start Server and Curl if Setup
+
+![MCP Marketplace Search](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/image_paypal_server.jpg)
+
+
+Endpoint: http://127.0.0.1:5000/api/query
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "server_id": "paypal",
+    "tool_name": "create_invoice",
+    "tool_input": {
+                "invoicer": {
+                  "business_name": "Tech Solutions Corp Inc."
+                },
+                "detail": {
+                  "currency_code": "USD"
+                },
+                "items": [
+                  {
+                    "quantity": "1",
+                    "name": "Consultation Service",
+                    "unit_amount": {
+                      "value": "150.00",
+                      "currency_code": "USD"
+                    }
+                  }
+                ]
+    }
+}' http://127.0.0.1:5000/api/query
+```
+
+Result
+
+```
+
+{
+                  "success": true,
+                  "data": [
+                    "{\"rel\":\"self\",\"href\":\"https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-Y5EH-7AJ6-8L4Y-LQ54\",\"method\":\"GET\"}"
+                  ],
+                  "error": null
+}
+```
 
 ### 6. Finance MCP Setup
 
 
-|  Cateogry | MCP Server | Tools | Config and Tool Schema Files Download  |
+|  Cateogry | MCP Server | Website | Config and Tool Schema Files Download  |
 | ---- | ---- | ---- | ---- |
-| Finance |  finance-agent-mcp-server  |  https://github.com/AI-Hub-Admin/finance-agent-mcp-server  | get_stock_price_global_market, etc. Visit more tools at [mcp marketplace](https://www.deepnlp.org/store/mcp-server/finance/pub-ai-hub-admin/finance-agent-mcp-server) |
+| Finance |  finance-agent-mcp-server  |  [Github](https://github.com/AI-Hub-Admin/finance-agent-mcp-server)  | get_stock_price_global_market, etc. Visit more tools at [finance agent mcp marketplace](https://www.deepnlp.org/store/mcp-server/finance/pub-ai-hub-admin/finance-agent-mcp-server) |
 | Finance |  yahoo-finance |  -  |  -  | - |
 
 
@@ -610,4 +779,28 @@ vim ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/category/mcp_config_s
 }
 ```
 
+
+#### Start Server and Curl if Setup
+
+![MCP Marketplace Search](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/image-finance-agent.jpg)
+
+Endpoint: http://127.0.0.1:5000/api/query
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "server_id": "finance-agent-mcp-server",
+    "tool_name": "get_stock_price_global_market",
+    "tool_input": {
+        "symbol_list": [
+                  "700"
+        ],
+        "market": "HK"
+    }
+}' http://127.0.0.1:5000/api/query
+```
+
+
+Result
+```
+{"success":true,"data":["[{\"avg_price\": \"552.000 HKD\", \"high\": \"554.500 HKD\", \"low\": \"546.000 HKD\", \"previous_close\": \"555.000 HKD\", \"symbol\": \"700\", \"symbol_hk\": \"0700.HK\", \"symbol_name_hk\": \"Tencent Holdings Ltd.\", \"timestamp\": \"30 Jul 2025 09:36\", \"update_time\": \"30 Jul 2025 09:36\", \"market_capitalization\": \"5,054.86 B HKD\", \"pe_ratio\": \"24.80\", \"change\": \"-3.500\", \"source\": \"HKEX, https://www.hkex.com.hk/Market-Data/Securities-Prices/Equities/Equities-Quote?sym=700&sc_lang=en\", \"data_source\": \"hkex.com\", \"source_url\": \"https://www.hkex.com.hk/Market-Data/Securities-Prices/Equities/Equities-Quote?sym=700&sc_lang=en\"}]"],"error":null}
+```
 
