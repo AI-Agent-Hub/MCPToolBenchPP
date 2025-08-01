@@ -1,194 +1,272 @@
-'''
-This is the entry function for starting the entire project, receiving all command line parameters
-Parameters include:
---input_file: Input file path, default is data/demo/demo_v0.json
---category: Data category, such as browser, search, default is demo
---model: Model, such as GPT4o, default is GPT4o
---stage: Stage, such as demo, generation, tool_call, default is demo
---metric: Metric, such as acc, pass_k, default is pass_k
---pass_k: Parameter k, such as 1,5,10, default is 1
---agent: Execution agent, base, base_tool_rag, base_multi-agent, default is base
---mcp_config: MCP configuration file path, default is mcp_marketplace/mcp_config.json
---data_version: Data version, such as v0, v1, default is v0
+#!/usr/bin/env python3
+"""
+Script to calculate tool_pass@{k} and parameter_pass@{k} metrics from existing log files.
+This script can process log files that contain tool_correctness and parameter_correctness data
+but don't have the calculated pass@k metrics for these dimensions.
+"""
 
-stage:
-1. If stage is generation, call run_data_generator.py, generate data according to specified category and data_version.
-3. If stage is tool_call, call run_tool_call.py according to specified model, directly perform calling and evaluation.
-4. If stage is all, first run run_data_generator.py to generate data, then call run_tool_call.py for calling and evaluation.
-5. If stage is demo, use all default parameters, first run run_data_generator.py to generate data, then call run_tool_call.py for calling and evaluation.
-
-Notes:
-1. When stage is demo, all default parameters must be used, no other parameters can be specified, data will be generated first, then tool calling and evaluation will be performed.
-2. When stage is generation, category and data_version must be filled, remind customers to provide all mcp tools files in the category directory under mcp_marketplace, format reference existing files.
-3. When stage is tool_call, input_file, category, model must be filled
-4. When stage is all, category, data_version, model must be filled, input_file is the data generated in the generation stage.
-5. Print all parameters to remind users when running.
-'''
-
+import json
 import argparse
-import sys
-from pathlib import Path
+import os
+import numpy as np
+from typing import List, Dict, Any, Tuple
+from src.mcp_tool_bench.evaluation.evaluation_utils import estimate_pass_at_k, base_error_analysis
 
+def check_single_tool_call_dag(pred_tool_result: Dict, label_result: Dict) -> Tuple[bool, bool]:
+    # implementation
+    label_tool_name = label_result["name"] if "name" in label_result else ""
+    label_result = label_result["output"] if "output" in label_result else {}
 
-from src.mcp_tool_bench import *
-from src.mcp_tool_bench.agents.data_generator_agent.run_data_generator import run_data_generation
-from src.mcp_tool_bench.agents.base_tool_call_agent.run_tool_call import run_benchmark
+    # prediction
+    predict_tool_name = pred_tool_result["name"] if "name" in pred_tool_result else ""
+    predict_result = pred_tool_result["output"] if "output" in pred_tool_result else {}
+    predict_status_code = predict_result["status_code"] if "status_code" in predict_result else 500
 
-# Default parameter values
-DEFAULT_ARGS = {
-    'input_file': 'data/demo/demo_v0.json',
-    'category': 'demo',
-    'model': 'GPT4o',
-    'stage': 'demo',
-    'metric': 'pass_k',
-    'pass_k': '1',
-    'evaluation_trial_per_task': '5',
-    'agent': 'base',
-    'mcp_config': 'mcp_marketplace/mcp_config.json',
-    'data_version': 'v0'
-}
+    if label_tool_name == predict_tool_name:
+        tool_consistency = True
+    else:
+        tool_consistency = False
 
-def parse_arguments():
-    """Parse command line arguments"""
-    parser = argparse.ArgumentParser(description='Project entry function')
-    parser.add_argument('--input_file', default=DEFAULT_ARGS['input_file'], help='Input file path for tool_call stage, default is {}'.format(DEFAULT_ARGS['input_file']))
-    parser.add_argument('--category', default=DEFAULT_ARGS['category'], help='Data category, such as browser, search, default is {}'.format(DEFAULT_ARGS['category']))
-    parser.add_argument('--model', default=DEFAULT_ARGS['model'], help='Model, such as GPT4o, default is {}'.format(DEFAULT_ARGS['model']))
-    parser.add_argument('--stage', default=DEFAULT_ARGS['stage'], choices=['demo', 'generation', 'tool_call', 'all'], help='Stage, such as demo, generation, tool_call, all, default is {}'.format(DEFAULT_ARGS['stage']))
-    parser.add_argument('--metric', default=DEFAULT_ARGS['metric'], help='Metric, such as acc, pass_k, default is {}'.format(DEFAULT_ARGS['metric']))
-    parser.add_argument('--pass_k', type=str, default=DEFAULT_ARGS['pass_k'], help='Parameter k, such as 1,5,10, default is {}'.format(DEFAULT_ARGS['pass_k']))
-    parser.add_argument('--evaluation_trial_per_task', type=str, default=DEFAULT_ARGS['evaluation_trial_per_task'], help='N: The Number of Trail per Task to calculate Pass@k {}'.format(DEFAULT_ARGS['evaluation_trial_per_task']))
-    parser.add_argument('--agent', default=DEFAULT_ARGS['agent'], help='Execution agent, such as base, base_tool_rag, base_multi-agent, default is {}'.format(DEFAULT_ARGS['agent']))
-    parser.add_argument('--mcp_config', default=DEFAULT_ARGS['mcp_config'], help='MCP configuration file path, default is {}'.format(DEFAULT_ARGS['mcp_config']))
-    parser.add_argument('--data_version', default=DEFAULT_ARGS['data_version'], help='Data version, such as v0, v1, default is {}'.format(DEFAULT_ARGS['data_version']))
+    result_success_label_list = base_error_analysis([predict_result])["result_success_label_list"]
+    if sum(result_success_label_list)==len(result_success_label_list):
+        output_consistency = True
+    else:
+        output_consistency = False
+    return tool_consistency, output_consistency
 
-    return parser.parse_args()
+def check_correctness(pred_tool_result_list: List[Dict], label_result_list: List[Dict]) -> Tuple[bool, bool]:
+    """
+    Check the correctness of tool calls
+    
+    Args:
+        pred_tool_result_list: Tool call prediction result list
+        label_result_list: Tool call ground truth result list
 
+    Returns:
+        Tuple[bool, bool]: (tool_consistency, output_consistency)
+    """
+    label_step = len(label_result_list) if label_result_list is not None else 0
+    predict_step = len(pred_tool_result_list) if pred_tool_result_list is not None else 0
 
-def validate_arguments(args):
-    """Validate the validity of arguments"""
-    if args.stage == 'demo':
-        # Check if non-default parameters are used in demo stage
-        # Check if there are non-default parameters
-        non_default_args = []
-        for arg_name in vars(args):
-            current_value = getattr(args, arg_name)
-            default_value = DEFAULT_ARGS.get(arg_name)
-            if current_value != default_value:
-                non_default_args.append(f"--{arg_name}")
+    tool_consistency = False
+    output_consistency = False
+    
+    label_result = label_result_list[-1]
+    pred_tool_result = pred_tool_result_list[-1]
+    tool_consistency, output_consistency = check_single_tool_call_dag(pred_tool_result, label_result)
+    
+    return tool_consistency, output_consistency
+
+def calculate_metrics_from_log(log_file_path: str, pass_k_list: List[int] = None) -> Dict[str, Any]:
+    """
+    Calculate tool_pass@{k} and parameter_pass@{k} metrics from a log file.
+    
+    Args:
+        log_file_path: Path to the log file
+        pass_k_list: List of k values for pass@k calculation. If None, will extract from log file.
         
-        if non_default_args:
-            print("Error: demo stage does not support specifying other parameters")
-            print(f"Detected non-default parameters: {', '.join(non_default_args)}")
-            print("demo stage will use all default parameters, please run directly: python run.py")
-            return False
+    Returns:
+        Dict containing the calculated metrics
+    """
+    
+    # Load log file
+    with open(log_file_path, 'r', encoding='utf-8') as f:
+        log_data = json.load(f)
+    
+    # Extract pass_k_list from log if not provided
+    if pass_k_list is None:
+        pass_k_str = log_data.get("run_info", {}).get("pass_k", "1")
+        pass_k_list = [int(k) for k in pass_k_str.split(",")]
+    
+    print(f"Processing log file: {log_file_path}")
+    print(f"Pass@k values: {pass_k_list}")
+    
+    # Extract run details
+    run_details = log_data.get("run_details", [])
+    if not run_details:
+        print("No run_details found in log file")
+        return {}
+    
+    # Arrays to store results for each task
+    num_trails_array = []
+    num_pass_array = []
+    num_tool_correct_array = []
+    num_parameter_correct_array = []
+    
+    run_details = run_details[:50]
+    # Process each task
+    for task in run_details:
+        trials = task.get("trials", [])
+        if not trials:
+            continue
+            
+        # Count trials and correct results
+        num_trials = len(trials)
+        num_passed = 0
+        num_tool_correct = 0
+        num_parameter_correct = 0
+
+        # Calculate directly from log
+        num_passed = sum(1 for trial in trials if (trial.get("if_pass", False) and trial.get("tool_correctness", False) and trial.get("parameter_correctness", False)))
+        num_tool_correct = sum(1 for trial in trials if trial.get("tool_correctness", False))
+        num_parameter_correct = sum(1 for trial in trials if (trial.get("parameter_correctness", False) and trial.get("tool_correctness", False)))
         
-        return True
+        num_trails_array.append(num_trials)
+        num_pass_array.append(num_passed)
+        num_tool_correct_array.append(num_tool_correct)
+        num_parameter_correct_array.append(num_parameter_correct)
     
-    if args.stage == 'generation':
-        print("Note: The data generation module requires to provide all mcp tools files in the category directory under mcp_marketplace, format reference existing files.")
-        if not args.category or not args.data_version:
-            print("Error: generation stage must fill category, data_version")
-            return False
+    print(f"Processed {len(num_trails_array)} tasks")
+    print(f"Total trials: {sum(num_trails_array)}")
+    print(f"Total passed: {sum(num_pass_array)}")
+    print(f"Total tool correct: {sum(num_tool_correct_array)}")
+    print(f"Total parameter correct: {sum(num_parameter_correct_array)}")
     
-    if args.stage == 'tool_call':
-        if not args.input_file or not args.category or not args.model:
-            print("Error: tool_call stage must fill input_file, category, model")
-            return False
+    # Calculate metrics for each k value
+    metrics_list = []
+    run_info = log_data.get("run_info", {})
     
-    if args.stage == 'all':
-        print("Note: The data generation module requires to provide all mcp tools files in the category directory under mcp_marketplace, format reference existing files.")
-        if not args.category or not args.data_version or not args.model:
-            print("Error: all stage must fill category, data_version, model")
-            return False
+    for k in pass_k_list:
+        # Calculate pass@{k} for overall correctness
+        pass_at_k_arr = estimate_pass_at_k(num_trails_array, num_pass_array, k)
+        pass_at_k = float(np.mean(pass_at_k_arr)) if len(pass_at_k_arr) > 0 else 0
+        
+        # Calculate tool_pass@{k}
+        tool_pass_at_k_arr = estimate_pass_at_k(num_trails_array, num_tool_correct_array, k)
+        tool_pass_at_k = float(np.mean(tool_pass_at_k_arr)) if len(tool_pass_at_k_arr) > 0 else 0
+        
+        # Calculate parameter_pass@{k}
+        parameter_pass_at_k_arr = estimate_pass_at_k(num_trails_array, num_parameter_correct_array, k)
+        parameter_pass_at_k = float(np.mean(parameter_pass_at_k_arr)) if len(parameter_pass_at_k_arr) > 0 else 0
+        
+        metric = {
+            "category": run_info.get("category", "unknown"),
+            "model": run_info.get("model", "unknown"),
+            f"pass@{k}": pass_at_k,
+            f"tool_pass@{k}": tool_pass_at_k,
+            f"parameter_pass@{k}": parameter_pass_at_k,
+            "num_tasks": len(num_trails_array),
+            "num_trials_total": sum(num_trails_array),
+            "num_passed_total": sum(num_pass_array),
+            "num_tool_correct_total": sum(num_tool_correct_array),
+            "num_parameter_correct_total": sum(num_parameter_correct_array)
+        }
+        metrics_list.append(metric)
+        
+        print(f"Pass@{k} - Tool_selected: {tool_pass_at_k:.4f}, Parameter: {parameter_pass_at_k:.4f}, Tool_call: {pass_at_k:.4f}")
     
-    return True
+    return {
+        "run_info": run_info,
+        "metrics": metrics_list,
+        "calculation_info": {
+            "log_file": log_file_path,
+            "pass_k_list": pass_k_list,
+            "num_tasks": len(num_trails_array),
+            "total_trials": sum(num_trails_array)
+        }
+    }
 
 
-def print_arguments(args):
-    """Print all arguments"""
-    print("=== Running Parameters ===")
-    for arg, value in vars(args).items():
-        print(f"{arg}: {value}")
-    print("===============")
+def update_log_file_with_metrics(log_file_path: str, output_file_path: str = None) -> str:
+    """
+    Update the original log file with the calculated metrics.
+    
+    Args:
+        log_file_path: Path to the original log file
+        output_file_path: Path for the updated log file. If None, will overwrite original.
+        
+    Returns:
+        Path to the updated log file
+    """
+    
+    # Calculate metrics
+    result = calculate_metrics_from_log(log_file_path)
+    
+    if not result:
+        print("Failed to calculate metrics")
+        return ""
+    
+    # Load original log file
+    with open(log_file_path, 'r', encoding='utf-8') as f:
+        original_log = json.load(f)
+    
+    # Update metrics in the original log
+    original_log["metrics"] = result["metrics"]
+    
+    # Determine output file path
+    if output_file_path is None:
+        output_file_path = log_file_path
+    
+    # Save updated log file
+    with open(output_file_path, 'w', encoding='utf-8') as f:
+        json.dump(original_log, f, ensure_ascii=False, indent=2)
+    
+    print(f"Updated log file saved to: {output_file_path}")
+    return output_file_path
+
+
+def process_multiple_logs(log_dir: str, pattern: str = None) -> None:
+    """
+    Process multiple log files in a directory.
+    
+    Args:
+        log_dir: Directory containing log files
+        pattern: Optional pattern to filter log files (e.g., "browser_0711_single_500")
+    """
+    
+    if not os.path.exists(log_dir):
+        print(f"Directory not found: {log_dir}")
+        return
+    
+    log_files = []
+    for file in os.listdir(log_dir):
+        if file.endswith('.json'):
+            if pattern is None or pattern in file:
+                log_files.append(os.path.join(log_dir, file))
+    
+    print(f"Found {len(log_files)} log files to process")
+    
+    for log_file in log_files:
+        print(f"\nProcessing: {log_file}")
+        try:
+            update_log_file_with_metrics(log_file)
+        except Exception as e:
+            print(f"Error processing {log_file}: {e}")
 
 
 def main():
-    """Main function"""
-    args = parse_arguments()
-    print_arguments(args)
+    parser = argparse.ArgumentParser(description="Calculate tool_pass@{k} and parameter_pass@{k} metrics from log files")
+    parser.add_argument("--log_file", type=str, help="Path to a single log file")
+    parser.add_argument("--log_dir", type=str, help="Directory containing log files")
+    parser.add_argument("--pattern", type=str, help="Pattern to filter log files (when using --log_dir)")
+    parser.add_argument("--pass_k", type=str, default="1,3", help="Comma-separated list of k values for pass@k")
+    parser.add_argument("--output", type=str, help="Output file path (for single file processing)")
+    parser.add_argument("--calculate_only", action="store_true", help="Only calculate and display metrics, don't update log file")
     
-    if not validate_arguments(args):
-        sys.exit(1)
+    args = parser.parse_args()
     
-    if args.stage == 'demo':
-        # demo stage: use default parameters, generate data first, then perform tool calling and evaluation
-        print("=" * 50)
-        print("Executing demo stage: using default parameters")
-        print("=" * 50)
-        
-        print("\n【Step 1】Data Generation")
-        print("-" * 30)
-        run_data_generation(args.category, args.data_version, args.mcp_config)
-        
-        # print("\n【Step 2】Tool Calling and Evaluation")
-        # print("-" * 30)
-        # # Set input_file to the generated data file
-        # args.input_file = f"data/{args.category}/{args.category}_{args.data_version}.json"
-        # run_benchmark(args)
-        
-        # print("\n" + "=" * 50)
-        # print("demo execution completed")
-        # print("=" * 50)
+    pass_k_list = [int(k) for k in args.pass_k.split(",")]
     
-    elif args.stage == 'generation':
-        # generation stage: generate data
-        print("=" * 50)
-        print("Executing generation stage: generate data")
-        print("=" * 50)
-        
-        print("\n【Step 1】Data Generation")
-        print("-" * 30)
-        run_data_generation(args.category, args.data_version, args.mcp_config)
-        
-        print("\n" + "=" * 50)
-        print("generation stage execution completed")
-        print("=" * 50)
+    if args.log_file:
+        if args.calculate_only:
+            # Only calculate and display metrics
+            result = calculate_metrics_from_log(args.log_file, pass_k_list)
+            if result:
+                print("\nCalculated Metrics:")
+                for metric in result["metrics"]:
+                    print(f"  {metric}")
+        else:
+            # Update log file with metrics
+            update_log_file_with_metrics(args.log_file, args.output)
     
-    elif args.stage == 'tool_call':
-        # tool_call stage: tool calling and evaluation
-        print("=" * 50)
-        print("Executing tool_call stage: tool calling and evaluation")
-        print("=" * 50)
-        
-        print("\n【Step 1】Tool Calling and Evaluation")
-        print("-" * 30)
-        run_benchmark(args)
-        
-        print("\n" + "=" * 50)
-        print("tool_call stage execution completed")
-        print("=" * 50)
+    elif args.log_dir:
+        # Process multiple log files
+        process_multiple_logs(args.log_dir, args.pattern)
     
-    elif args.stage == 'all':
-        # all stage: generate data first, then perform tool calling and evaluation
-        print("=" * 50)
-        print("Executing all stage: generate data first, then perform tool calling and evaluation")
-        print("=" * 50)
-        
-        print("\n【Step 1】Data Generation")
-        print("-" * 30)
-        run_data_generation(args.category, args.data_version, args.mcp_config)
-        
-        print("\n【Step 2】Tool Calling and Evaluation")
-        print("-" * 30)
-        # Set input_file to the generated data file
-        args.input_file = f"data/{args.category}/{args.category}_{args.data_version}.json"
-        run_benchmark(args)
-        
-        print("\n" + "=" * 50)
-        print("Full pipeline execution completed")
-        print("=" * 50)
+    else:
+        print("Please provide either --log_file or --log_dir")
+        parser.print_help()
 
 
 if __name__ == "__main__":
-    main()
+    main() 
