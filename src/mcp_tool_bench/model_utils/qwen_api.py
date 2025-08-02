@@ -7,7 +7,7 @@ import requests
 
 class QwenModelAPIProvider(BaseModelAPIProvider):
 
-    def api_chat(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    def api_chat(self, messages: List, **kwargs) -> Dict[str, Any]:
         """
             Qwen model: "qwen-max", "qwen-plus"
         """
@@ -16,7 +16,7 @@ class QwenModelAPIProvider(BaseModelAPIProvider):
             if model == "" or model is None:
                 model = "qwen-plus"
 
-            response = call_qwen_user_prompt_model_selection(prompt, self.model_name)
+            response = call_qwen_messages_model_selection(messages, self.model_name)
             tools, completion, reasoningContent = post_process_qwen_response(response)
             result = {
                 KEY_FUNCTION_CALL: tools,
@@ -54,9 +54,10 @@ class QwenModelAPIProvider(BaseModelAPIProvider):
             messages, tools, model
             response = call_qwen_tool_calls_model_selection(messages, tools, model)
             tool_call = post_process_function_call_qwen_common(response)
+            tool_call_mapped, completion, reasoningContent = function_call_result_common_mapper(tool_call)
 
             result = {
-                KEY_FUNCTION_CALL: tool_call,
+                KEY_FUNCTION_CALL: tool_call_mapped,
                 KEY_COMPLETION: "", 
                 KEY_REASON_CONTENT: ""
             }
@@ -68,7 +69,39 @@ class QwenModelAPIProvider(BaseModelAPIProvider):
             logging.error(f"QwenModelAPIProvider {e}")
             return {}
 
-def call_qwen_user_prompt_model_selection(user_prompt, model):
+def call_qwen_messages_model_selection(messages: List, model: str):
+    """
+        Reference doc: https://help.aliyun.com/zh/model-studio/use-qwen-by-calling-api#b30677f6e9437
+        Input: 
+            messages: List[Dict]
+    """
+    try:
+        url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+        api_key = settings.QWEN_API_KEY
+        if api_key is None:
+            raise ValueError("qwen_general_api.py call_qwen_max_user_prompt api_key not found, please check .env file key QWEN_API_KEY")
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": model,
+            "messages": messages,
+        }
+        data = json.dumps(data).encode("utf-8")
+        response = requests.post(url, headers=headers, data=data, timeout=10)
+        if response.status_code == 200:
+            result = response.json()
+            print("Qwen Response:", result["choices"][0]["message"]["content"])
+        else:
+            print(f"API Return Failed with Status (Status Code: {response.status_code}): {response.text}")
+        return response
+    except Exception as e:
+        logging.error(e)
+        return None
+
+
+def call_qwen_user_prompt_model_selection(user_prompt: str, model: str):
     """
         Reference doc: https://help.aliyun.com/zh/model-studio/use-qwen-by-calling-api#b30677f6e9437
     """
