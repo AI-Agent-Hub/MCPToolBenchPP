@@ -111,7 +111,7 @@ def agent_loop(query: str, tools: List[Dict], model: str, **kwargs) -> List[Dict
     # save the function call sequence result
     function_call_result = []
     loop_end = False
-    while ((not loop_end) and iterations <= max_iterations):
+    while ((not loop_end) and iterations < max_iterations):
         iterations += 1
         # print (f"Running Iterations {iterations}")
         tools_mapped = tools_openai_wrapper(tools)
@@ -119,7 +119,7 @@ def agent_loop(query: str, tools: List[Dict], model: str, **kwargs) -> List[Dict
         tool_call = call_llm_tools_function_call_wrapper(model, {"messages": call_messages, "tools": tools_mapped})
         print (f"Iteration {iterations} agent_loop tool_call result {tool_call}")
 
-        if len(tool_call) == 0:
+        if tool_call is None or len(tool_call) == 0:
             # no tools selected, end of function call
             # logging.info(f"Iteration {iterations} No Tools Chosen by LLM tool_call")
             loop_end = True 
@@ -516,7 +516,8 @@ def run_benchmark(args):
                 tool_correctness, parameter_correctness = check_ast(
                     function_call_result, 
                     function_call_label,
-                    query
+                    query,
+                    args.llm_as_judge_model
                 )
                 k_results.append(if_pass)
                 # k_tool_correct_results.append(True if tool_correctness == 1 else False)
