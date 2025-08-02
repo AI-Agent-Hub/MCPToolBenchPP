@@ -13,7 +13,7 @@ class BaseModelAPIProvider:
     """
 
     def __init__(self, model_name: str):
-        """        
+        """
         Args:
             model_name: e.g. claude-3.7
         """
@@ -53,37 +53,90 @@ class BaseModelAPIProvider:
         }
         return result
 
-	
+def function_call_result_common_mapper(tool_call):
+    """
+        This wrapper is a common mapper to wrap the result of OpenAI/Claude Stype function call results, thinking/no thinking models
+        Args:
+            tool_call: 
+                {
+                    "id": "call_d6f4ed29ce614390b99a05",
+                    "function": {
+                        "arguments": "{\"url\": \"https://www.stackoverflow.com\", \"browserType\": \"chromium\"}",
+                        "name": "playwright_navigate"
+                    },
+                    "type": "function",
+                    "index": 0
+                }
+
+        Return:
+            tools_choice_response 
+
+                {
+                    "function_name": "playwright_navigate",
+                    "function_arguments": "{\"url\": \"https://www.stackoverflow.com\", \"browserType\": \"chromium\"}",
+                    "is_function_call": true,
+                    "id": "call_d6f4ed29ce614390b99a05"
+                } 
+            completion: str
+            reasoningContent: str
+    """
+    if tool_call is None or len(tool_call) == 0:
+        return {}, "", ""
+
+    tools_choice_response = {
+        'function_name': '',
+        'function_arguments': '',
+        'is_function_call': False, 
+        'id': ''
+    }
+    completion = ""
+    reasoningContent = ""
+    try:
+        tool_id = tool_call["id"] if "id" in tool_call else ""
+        function = tool_call["function"] if "function" in tool_call else {}
+        function_arguments = function["arguments"] if "arguments" in function else {}
+        function_name = function["name"] if "name" in function else ""
+
+        tools_choice_response["is_function_call"] = True 
+        tools_choice_response["function_name"] = function_name
+        tools_choice_response["function_arguments"] = function_arguments
+        tools_choice_response["id"] = tool_id
+    except Exception as e:
+        logging.error(f"Failed to run tool_result_to_claude_mapper {e}")
+    return tools_choice_response, completion, reasoningContent
+
 def tool_call_parameter_wrapper(model: str, tool_id: str, tool_name: str, tool_arguments: dict):
     
     message_tool_parameter = {}
-    if model in [MODEL_SELECTION_GPT4O]:
+    if "gpt" in model:
         # OpenAI Claude Format
         message_tool_parameter = tool_call_param_openai_wrapper(tool_id, tool_name, tool_arguments)
-    elif model in [MODEL_SELECTION_CLAUDE_37]:
+    elif "claude" in model:
         # Claude Format
         message_tool_parameter = tool_call_param_claude_wrapper(tool_id, tool_name, tool_arguments)
-    elif model in [MODEL_SELECTION_QWEN3_MAX, MODEL_SELECTION_QWEN3_PLUS]:
+    elif "qwen" in model:
         # Qwen Wrapper
         message_tool_parameter = tool_call_param_qwen_wrapper(tool_id, tool_name, tool_arguments)
     else:
         message_tool_parameter = tool_call_param_openai_wrapper(tool_id, tool_name, tool_arguments)
     return message_tool_parameter
+
 def tool_call_result_wrapper(model: str, tool_id: str, tool_name: str, tool_result: dict):
     
     message_tool_result = {}
-    if model in [MODEL_SELECTION_GPT4O]:
+    if "gpt" in model:
         # OpenAI Claude Format
         message_tool_result = tool_call_result_openai_wrapper(tool_id, tool_name, tool_result)
-    elif model in [MODEL_SELECTION_CLAUDE_37]:
+    elif "claude" in model:
         # Claude Format
         message_tool_result = tool_call_result_claude_wrapper(tool_id, tool_result)
-    elif model in [MODEL_SELECTION_QWEN3_MAX, MODEL_SELECTION_QWEN3_PLUS]:
+    elif "qwen" in model:
         # Qwen Wrapper
         message_tool_result = tool_call_result_qwen_wrapper(tool_id, tool_result)
     else:
         message_tool_result = tool_call_result_openai_wrapper(tool_id, tool_name, tool_result)
     return message_tool_result
+
 def tools_openai_wrapper(tools):
     tools_wrapped = [{
         "type": "function",
@@ -133,6 +186,7 @@ def tool_call_param_claude_wrapper(tool_id: str, tool_name: str, arguments: Dict
         ]
     }
     return claude_tool_assistant
+
 def tool_call_param_claude_bedrock_wrapper(tool_id: str, tool_name: str, arguments: Dict):
     claude_tool_assistant = {
         "role": "assistant",
@@ -147,6 +201,7 @@ def tool_call_param_claude_bedrock_wrapper(tool_id: str, tool_name: str, argumen
         ]
     }
     return claude_tool_assistant
+
 def tool_call_param_qwen_wrapper(tool_id: str, tool_name: str, arguments: Dict):
     qwen_tool_assistant = {
         "role": "assistant",
@@ -189,6 +244,7 @@ def tool_call_result_claude_wrapper(tool_id: str, result: Any):
         ]
     }
     return claude_tool_result_msg
+
 def tool_call_result_claude_bedrock_wrapper(tool_id: str, result: Any):
     """
     """
