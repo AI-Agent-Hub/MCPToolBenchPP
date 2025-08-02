@@ -63,8 +63,10 @@ class KimiModelAPIProvider(BaseModelAPIProvider):
                 model = "kimi-k2-0711-preview"
             response = call_kimi_k2_tools(messages, tools, model)
             tool_result = post_process_function_call_kimi(response)
+            tool_call_mapped, completion, reasoningContent = function_call_result_common_mapper(tool_result)
+
             result = {
-                KEY_FUNCTION_CALL: tool_result,
+                KEY_FUNCTION_CALL: tool_call_mapped,
                 KEY_COMPLETION: "", 
                 KEY_REASON_CONTENT: ""
             }
@@ -133,11 +135,13 @@ def post_process_function_call_kimi(response):
         if "error" in response:
             logging.error(f"post_process_function_call_kimi error {response}")
             return {}
-        function = response.choices[0].message.tool_calls[0].function
+        first_tool_call = response.choices[0].message.tool_calls[0]
         tool_call = {
-            "name": function.name,
-            "arguments": function.arguments,
-            "is_function_call": True
+            "id": first_tool_call.id,
+            "function": {
+                "name": first_tool_call.function.name,
+                "arguments": first_tool_call.function.arguments
+            }
         }
         return tool_call
     except Exception as e:
