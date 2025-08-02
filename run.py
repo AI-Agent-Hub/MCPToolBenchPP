@@ -40,7 +40,7 @@ from src.mcp_tool_bench.agents.base_tool_call_agent.run_tool_call import run_ben
 DEFAULT_ARGS = {
     'input_file': 'data/demo/demo_v0.json',
     'category': 'demo',
-    'model': 'gpt-4o-ant',
+    'model': 'gpt-4o',
     'stage': 'demo',
     'metric': 'pass_k',
     'pass_k': '1',
@@ -48,7 +48,8 @@ DEFAULT_ARGS = {
     'mcp_config': 'mcp_marketplace/mcp_config.json',
     'data_version': 'v0',
     'log_file': None,
-    'evaluation_trial_per_task': 5
+    'evaluation_trial_per_task': 5,
+    'llm_as_judge_model': "gpt-4o"
 }
 
 def parse_arguments():
@@ -64,7 +65,8 @@ def parse_arguments():
     parser.add_argument('--mcp_config', default=DEFAULT_ARGS['mcp_config'], help='MCP configuration file path, default is {}'.format(DEFAULT_ARGS['mcp_config']))
     parser.add_argument('--data_version', default=DEFAULT_ARGS['data_version'], help='Data version, such as v0, v1, default is {}'.format(DEFAULT_ARGS['data_version']))
     parser.add_argument('--log_file', default=DEFAULT_ARGS['log_file'], help='Specify log file name for resume functionality. If not provided, will auto-generate based on input file and timestamp.')
-    parser.add_argument('--evaluation_trial_per_task', default=DEFAULT_ARGS['evaluation_trial_per_task'], help='Calculation Pass@K Number of Trials...')
+    parser.add_argument('--evaluation_trial_per_task', type=int, default=DEFAULT_ARGS['evaluation_trial_per_task'], help='Calculation Pass@K Number of Trials...')
+    parser.add_argument('--llm_as_judge_model', type=str, default=DEFAULT_ARGS['llm_as_judge_model'], help='LLM Model Used to determine the parameters are correctly aligned with ground-truth, especial in search tool that query is rewritten')
 
     return parser.parse_args()
 
