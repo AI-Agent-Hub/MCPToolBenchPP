@@ -61,47 +61,55 @@ def process_response(response_text):
     decoded_json_str = decoded_json_str.replace("```json\n", "").replace("```", "").replace("\n", "")
     return decoded_json_str
 
-def check_ast(pred_tool_result_list: List[Dict], label_result_list: List[Dict], query: str) -> Tuple[bool, bool]:
+def check_ast(pred_tool_result_list: List[Dict], label_result_list: List[Dict], query: str, model_name: str) -> Tuple[bool, bool]:
     """
-    Check the AST of tool calls
+        Check the AST of tool calls
+        model_name: required, the LLM as a judge can verify the parameters are aligned. For example, the "query" used in search tools may be 
+        rewrited by Function Call models. And LLM as a judge need to determine if the query is correctedly rewritten that match the original query.
+        Default: Using GPT4o
     """
-    if pred_tool_result_list == label_result_list:
-        return True, True
-    label_step = 1
-    predict_step = 1
-    if (label_step == 1 and predict_step == 1):
-        user_prompt = user_prompt_template_ast.format(pred_tool_result_list=pred_tool_result_list, label_result_list=label_result_list, query=query)
-        system_prompt = system_prompt_template_ast_single.format()
-        messages = [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": user_prompt
-            }
-        ]
-        # print("messages: ", messages)
-        model_provider = _global_model_provider[MODEL_SELECTION_GPT4O_ANT] if MODEL_SELECTION_GPT4O_ANT in _global_model_provider else None
-        output = model_provider.api_chat(messages, wait_time=5) if model_provider is not None else {}
-        raw_response = output[KEY_COMPLETION] if KEY_COMPLETION in output else ""
-        # Normal chat: process string
-        if isinstance(raw_response, str):
-            result =  process_response(raw_response)
-        try:
-            result = json.loads(result)
-        except Exception as e:
-            logging.error(f" Failed to parse json {e}")
+    try:
+        if pred_tool_result_list == label_result_list:
+            return True, True
+        label_step = 1
+        predict_step = 1
+        if (label_step == 1 and predict_step == 1):
+            user_prompt = user_prompt_template_ast.format(pred_tool_result_list=pred_tool_result_list, label_result_list=label_result_list, query=query)
+            system_prompt = system_prompt_template_ast_single.format()
+            messages = [
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt
+                }
+            ]
+            # print("messages: ", messages)
+            model_provider = _global_model_provider[model_name] if model_name in _global_model_provider else _global_model_provider[MODEL_SELECTION_GPT4O]
+            output = model_provider.api_chat(messages, wait_time=5) if model_provider is not None else {}
+            raw_response = output[KEY_COMPLETION] if KEY_COMPLETION in output else ""
+            # Normal chat: process string
+            if isinstance(raw_response, str):
+                result =  process_response(raw_response)
+            try:
+                result = json.loads(result)
+            except Exception as e:
+                logging.error(f" Failed to parse json {e}")
+                return False, False
+            # print("[debug]  check_ast result: ", result)
+            tool_correctness = result["tool_correctness"] if "tool_correctness" in result else 0
+            parameter_correctness = result["parameter_correctness"] if "parameter_correctness" in result else 0
+            
+        else:
+            ## multiple
             return False, False
-        # print("[debug]  check_ast result: ", result)
-        tool_correctness = result["tool_correctness"] if "tool_correctness" in result else 0
-        parameter_correctness = result["parameter_correctness"] if "parameter_correctness" in result else 0
-        
-    else:
-        ## multiple
-        return False, False
-    return tool_correctness, parameter_correctness
+        return tool_correctness, parameter_correctness
+
+    except Exception as e:
+        print (f"check_ast failed with error {e}")
+        return 0, 0
 
 def check_single_tool_call_dag(pred_tool_result: Dict, label_result: Dict) -> Tuple[bool, bool]:
     # implementation
