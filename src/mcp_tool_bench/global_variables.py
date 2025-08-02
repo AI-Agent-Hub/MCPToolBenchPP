@@ -37,6 +37,3 @@ KEY_BASE_COMPARE_FUNC = "base_compare_func"
 KEY_COMPLETION = "completion"
 KEY_REASON_CONTENT = "reason"
 KEY_FUNCTION_CALL = "function_call"
-
-
-EVALUATION_TRIAL_PER_TASK = 5
