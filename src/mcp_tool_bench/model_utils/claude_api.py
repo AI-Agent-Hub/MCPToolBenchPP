@@ -82,6 +82,7 @@ class ClaudeModelAPIProvider(BaseModelAPIProvider):
                 else:
                     chat_messages.append(msg)
 
+            # Claude's `tools` parameter directly takes the list of tool definitions
             response = self.client.messages.create(
                 model=model,
                 max_tokens=kwargs.get("max_tokens", 1024), # Claude requires max_tokens
@@ -126,23 +127,28 @@ def post_process_claude_function_call_response(response: Any) -> (Dict[str, Any]
     """
     if response is None or not response.content:
         return {}, "", ""
-
     tool_call_result = {}
     completion_content = ""
     reasoning_content = ""
 
-    for block in response.content:
-        if block.type == "tool_use":
-            if not tool_call_result: 
-                tool_call_result = {
-                    "name": block.name,
-                    "arguments": block.input, # Claude's tool_use.input is already a dict
-                    "is_function_call": True,
-                    "id": block.id # Store tool_use ID for sending tool results back
-                }
-        elif block.type == "text":
-            completion_content += block.text
-    return tool_call_result, completion_content, reasoning_content
+    try:
+
+        for block in response.content:
+            if block.type == "tool_use":
+                if not tool_call_result: 
+                    tool_call_result = {
+                        "function_name": block.name,
+                        "function_arguments": block.input, # Claude's tool_use.input is already a dict
+                        "is_function_call": True,
+                        "id": block.id # Store tool_use ID for sending tool results back
+                    }
+            elif block.type == "text":
+                completion_content += block.text
+        return tool_call_result, completion_content, reasoning_content
+            
+    except Exception as e:
+        print (f"DEBUG: Failed to post_process_claude_function_call_response with error {e}")       
+        return tool_call_result, completion_content, reasoning_content
 
 if __name__ == '__main__':    
     # Test function calling
