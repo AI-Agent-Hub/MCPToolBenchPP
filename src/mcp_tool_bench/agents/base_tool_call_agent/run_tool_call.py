@@ -404,7 +404,7 @@ def create_new_log_data(args, total_instances):
             "model": args.model,
             "category": args.category,
             "pass_k": args.pass_k,
-            "evaluation_trial_per_task": EVALUATION_TRIAL_PER_TASK,
+            "evaluation_trial_per_task": args.evaluation_trial_per_task,
             "start_time": datetime.datetime.now().isoformat(),
             "total_instances": total_instances
         },
@@ -452,12 +452,12 @@ def run_benchmark(args):
     pass_k_list = [int(k) for k in str(args.pass_k).split(",")]
     max_pass_k = max(pass_k_list)
     
-    if EVALUATION_TRIAL_PER_TASK < max_pass_k:
-        error_msg = f"ERROR: EVALUATION_TRIAL_PER_TASK ({EVALUATION_TRIAL_PER_TASK}) must be greater than or equal to the maximum pass@k value ({max_pass_k}). Current pass_k values: {pass_k_list}"
+    if args.evaluation_trial_per_task < max_pass_k:
+        error_msg = f"ERROR: EVALUATION_TRIAL_PER_TASK ({args.evaluation_trial_per_task}) must be greater than or equal to the maximum pass@k value ({max_pass_k}). Current pass_k values: {pass_k_list}"
         print(error_msg)
         raise ValueError(error_msg)
     
-    print(f"Validation passed: EVALUATION_TRIAL_PER_TASK={EVALUATION_TRIAL_PER_TASK}, max_pass_k={max_pass_k}")
+    print(f"Validation passed: EVALUATION_TRIAL_PER_TASK={args.evaluation_trial_per_task}, max_pass_k={max_pass_k}")
     
     # Loading Data from Instances
     with open(args.input_file, 'r', encoding='utf-8') as f:
@@ -506,7 +506,7 @@ def run_benchmark(args):
                 "trials": []
             }
             
-            for idx in range(EVALUATION_TRIAL_PER_TASK):
+            for idx in range(args.evaluation_trial_per_task):
                 # Execute tool call
                 function_call_result = agent_loop(query, tools, args.model, mcp_tools_dict=mcp_server_tools_dict)
                 print (f"DEBUG: function_call_result {function_call_result}")
@@ -541,7 +541,7 @@ def run_benchmark(args):
             task_details["data_pass"] = any(k_results)
             task_details["tool_data_pass"] = any(k_tool_correct_results)
             task_details["parameter_data_pass"] = any(k_parameter_correct_results)
-            task_details["num_trials"] = EVALUATION_TRIAL_PER_TASK
+            task_details["num_trials"] = args.evaluation_trial_per_task
             task_details["num_passed"] = sum(k_results)
             task_details["num_tool_correct"] = sum(k_tool_correct_results)
             task_details["num_parameter_correct"] = sum(k_parameter_correct_results)
