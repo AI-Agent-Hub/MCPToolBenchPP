@@ -1,42 +1,25 @@
-import os
-from typing import Dict, List, Any, Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import json
+from typing import Dict, Any, Optional
 
-class Settings(BaseSettings):
+from ..global_variables import *
+from .qwen_api import QwenModelAPIProvider
+from .kimi_api import KimiModelAPIProvider
+from .claude_api import ClaudeModelAPIProvider
+from .openai_api import OpenAIModelAPIProvider
 
-    QWEN_API_KEY: Optional[str] = None
-    OPENAI_API_KEY: Optional[str] = None
-    ANTHROPIC_API_KEY: Optional[str] = None
-    GOOGLE_API_KEY: Optional[str] = None
-    MISTRAL_API_KEY: Optional[str] = None
-    KIMI_API_KEY: Optional[str] = None
+_global_model_provider: Dict[str, Any] = {}
 
-    model_config = SettingsConfigDict(
-        env_file=".env",  
-        env_file_encoding="utf-8",
-        extra="ignore"            
-    )
+## CLAUDE
+_global_model_provider[MODEL_SELECTION_CLAUDE_37] = ClaudeModelAPIProvider(MODEL_SELECTION_CLAUDE_37)
+_global_model_provider[MODEL_SELECTION_CLAUDE_OPUS_4] = ClaudeModelAPIProvider(MODEL_SELECTION_CLAUDE_OPUS_4)
+## OPENAI
+_global_model_provider[MODEL_SELECTION_GPT4O] = OpenAIModelAPIProvider(MODEL_SELECTION_GPT4O)
+## QWEN
+_global_model_provider[MODEL_SELECTION_QWEN25_MAX] = QwenModelAPIProvider(MODEL_SELECTION_QWEN25_MAX)
+_global_model_provider[MODEL_SELECTION_QWEN3_PLUS] = QwenModelAPIProvider(MODEL_SELECTION_QWEN3_PLUS)
+_global_model_provider[MODEL_SELECTION_QWEN3_TURBO] = QwenModelAPIProvider(MODEL_SELECTION_QWEN3_TURBO)
+_global_model_provider[MODEL_SELECTION_QWEN3_235B] = QwenModelAPIProvider(MODEL_SELECTION_QWEN3_235B)
+_global_model_provider[MODEL_SELECTION_QWEN3_CODER] = QwenModelAPIProvider(MODEL_SELECTION_QWEN3_CODER)
 
-## Global Settings to Store .env keys
-settings = Settings()
-
-## Model Name Enum
-MODEL_SELECTION_CLAUDE_OPUS_4 = "claude-opus-4"
-MODEL_SELECTION_CLAUDE_37 =  "claude-3-7-sonnet-20250219"
-MODEL_SELECTION_GPT4O =  "gpt-4o"
-MODEL_SELECTION_GEMINI_25_FLASH = "gemini-2.5-flash"
-MODEL_SELECTION_QWEN25_MAX = "qwen2.5-max"
-MODEL_SELECTION_QWEN3_MAX = "qwen3-max"
-MODEL_SELECTION_QWEN3_PLUS = "qwen3-plus"
-MODEL_SELECTION_DEEPSEEK_R1 = "deepseek-r1"
-MODEL_SELECTION_QWEN3_CODER = "qwen3-coder-plus"
-MODEL_SELECTION_KIMI_K2 = "kimi-k2-0711-preview"
-
-## Constant KEY 
-KEY_MCP_TOOLS_DICT = "mcp_tools_dict"
-KEY_BASE_COMPARE_FUNC = "base_compare_func"
-KEY_COMPLETION = "completion"
-KEY_REASON_CONTENT = "reason"
-KEY_FUNCTION_CALL = "function_call"
-
-EVALUATION_TRIAL_PER_TASK = 5
+## KIMI
+_global_model_provider[MODEL_SELECTION_KIMI_K2] = KimiModelAPIProvider(MODEL_SELECTION_KIMI_K2)
