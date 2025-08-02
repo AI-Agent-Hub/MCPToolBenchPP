@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import os
 import sys
 import openai
+from openai import OpenAI
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(CURRENT_DIR, '../../..')))
@@ -86,8 +87,10 @@ class OpenAIModelAPIProvider(BaseModelAPIProvider):
                 **kwargs
             )
             tool_result = post_process_openai_function_call_response(response)
+            tool_call_mapped, completion, reasoningContent = function_call_result_common_mapper(tool_call)
+
             result = {
-                KEY_FUNCTION_CALL: tool_result,
+                KEY_FUNCTION_CALL: tool_call_mapped,
                 KEY_COMPLETION: "",
                 KEY_REASON_CONTENT: ""
             }
@@ -116,17 +119,23 @@ def post_process_openai_function_call_response(response):
     if response is None or not response.choices or not response.choices[0].message:
         return {}
 
-    message = response.choices[0].message
-    if message.tool_calls:
-        first_tool_call = message.tool_calls[0]
-        if first_tool_call.type == "function" and first_tool_call.function:
-            tool_call = {
-                "name": first_tool_call.function.name,
-                "arguments": first_tool_call.function.arguments, # Arguments are a string, usually JSON
-                "is_function_call": True
-            }
-            return tool_call
-    return {}
+    try:
+        message = response.choices[0].message
+        if message.tool_calls:
+            first_tool_call = message.tool_calls[0]
+            if first_tool_call.type == "function" and first_tool_call.function:
+                tool_call = {
+                    "id": first_tool_call.id,
+                    "function": {
+                        "name": first_tool_call.function.name,
+                        "arguments": first_tool_call.function.arguments
+                    }
+                }
+                return tool_call
+        return {}
+    except Exception as e:
+        print (f"Failed to post_process_openai_function_call_response error {e}")
+        return {}
 
 if __name__ == '__main__':    
     # Test function calling
