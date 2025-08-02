@@ -20,15 +20,22 @@ class Settings(BaseSettings):
 settings = Settings()
 
 ## Model Name Enum
+# Claude
 MODEL_SELECTION_CLAUDE_OPUS_4 = "claude-opus-4"
 MODEL_SELECTION_CLAUDE_37 =  "claude-3-7-sonnet-20250219"
+# OpenAI
 MODEL_SELECTION_GPT4O =  "gpt-4o"
+# Gemini
 MODEL_SELECTION_GEMINI_25_FLASH = "gemini-2.5-flash"
-MODEL_SELECTION_QWEN25_MAX = "qwen2.5-max"
-MODEL_SELECTION_QWEN3_MAX = "qwen3-max"
-MODEL_SELECTION_QWEN3_PLUS = "qwen3-plus"
-MODEL_SELECTION_DEEPSEEK_R1 = "deepseek-r1"
+# Qwen
+MODEL_SELECTION_QWEN25_MAX = "qwen-max" # latest update to Qwen2.5
+MODEL_SELECTION_QWEN3_PLUS = "qwen-plus"
+MODEL_SELECTION_QWEN3_TURBO = "qwen-turbo"
+MODEL_SELECTION_QWEN3_235B = "qwen3-235b-a22b-instruct-2507"
 MODEL_SELECTION_QWEN3_CODER = "qwen3-coder-plus"
+# Deepseek
+MODEL_SELECTION_DEEPSEEK_R1 = "deepseek-r1"
+# Kimi
 MODEL_SELECTION_KIMI_K2 = "kimi-k2-0711-preview"
 
 ## Constant KEY 
@@ -37,3 +44,4 @@ KEY_BASE_COMPARE_FUNC = "base_compare_func"
 KEY_COMPLETION = "completion"
 KEY_REASON_CONTENT = "reason"
 KEY_FUNCTION_CALL = "function_call"
+
