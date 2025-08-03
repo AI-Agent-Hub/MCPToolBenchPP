@@ -19,7 +19,7 @@ Notice: This repo benchmark is still WIP and more domain dataset will be release
 | Qwen2.5 Max | 0.7262 | 0.2749 | 0.9419 | 0.8871 | 0.6280 | 0.4600 |
 | Claude Sonnet 3.7 | 0.6503 | 0.1840 | 0.8415 | 0.8183 | 0.7280 | 0.6200 |
 | Kimi K2 Instruct | 0.8182 | 0.2524 | 0.9062 | 0.8772 | 0.7320 | 0.3680 |
-| Qwen3 Coder | - | - | - | - | - | - |
+| Qwen3 Coder | 0.8866 | 0.2925 | 0.9080 | 0.8680 | 0.7180 | 0.5227 |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
 
@@ -31,10 +31,9 @@ Notice: This repo benchmark is still WIP and more domain dataset will be release
 | Qwen2.5 Max | 0.7372 | 0.2272 | 0.6684 | 0.5277 | 0.7511 | 0.2556 |
 | Claude Sonnet | 0.5820 | 0.2748 | 0.7058 | 0.5574 | 0.7400 | 0.2311 |
 | Kimi K2 Instruct | 0.6088 | 0.2008 | 0.8071 | 0.6761 | 0.7156 | 0.2378 |
-| Qwen3 Coder | - | - | - | - | - | - |
+| Qwen3 Coder | 0.7830 | 0.3054 | 0.7240 | 0.5440 | 0.7320 | 0.2860 |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
-
 
 
 ![AST Evaluation MCPToolBench](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/model_performance_ast_subplots.png?raw=true)
