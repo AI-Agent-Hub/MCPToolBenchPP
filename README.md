@@ -559,17 +559,35 @@ Create a workspace folder to run local file systems
 
 Please use sub foulder in the MCP UI App to get privilege of folder
 Let's say you already clone the mcp_markplace project into your local folder ./MCPToolBenchPP/mcp,
-create a temp folder <code>test_project_root</code> to run local file testing 
+
+
+To use the file system mcp, firstly you need to create a test_project under the working directory such as "./MCPToolBenchPP/mcp/mcp-marketplace/app/mcp_tool_use"
+
+You can either just move the example project <code>test_project_root</code> to the working directory or create a new project <code>test_project_root</code> from scratch
+to run local file testing.
+
 
 ```
-mkdir ./mcp/mcp-marketplace/app/mcp_tool_use/test_project_root
+## under the root directory cd ./MCPToolBenchPP
 
+mv ./data/filesystem/test_project_root ./mcp/mcp-marketplace/app/mcp_tool_use
+
+or
+
+mkdir ./mcp/mcp-marketplace/app/mcp_tool_use/test_project_root 
+create dummy files similar to ./data/filesystem/test_project_root
 ```
 
 workspaceFolder should be a absolute path.e.g. : /path/to/folder/test_project_root
 
+```
+workspaceFolder=/{absolute_path_to_MCPToolBenchPP}/mcp/mcp-marketplace/app/mcp_tool_use
 
 vim ./mcp/mcp-marketplace/app/mcp_tool_use/data/mcp/config/mcp_config.json
+
+```
+
+And add the below config, remember to use absolute path ${workspaceFolder}
 
 ```
 {
@@ -612,6 +630,19 @@ Success:
   "[FILE] .DS_Store\n[FILE] .env\n[FILE] .env.example\n[FILE] README.md\n[DIR] data\n[DIR] dev\n[DIR] docs\n[FILE] document.md\n[FILE] log\n[FILE] requirements.txt\n[FILE] run_mcp_tool_use.sh\n[DIR] src\n[DIR] test_project_root\n[DIR] tests\n[DIR] web"
 ]
 ```
+
+
+**Errors**
+
+Error: Access denied - path outside allowed directories
+
+The root folder of the MCP Marketplace App is located  mcp_marketplace_path="./{absolute_path_to_MCPToolBenchPP}/mcp/mcp-marketplace/app/mcp_tool_use"
+
+And workspaceFolder should be same or parent folder of $mcp_marketplace_path
+
+so when app is looking for the <code>./test_project_root under path</code> under <code>./mcp/mcp-marketplace/app/mcp_tool_use/test_project_root</code>, it has correct access.
+
+
 
 ### 3. Search MCP Setup
 
