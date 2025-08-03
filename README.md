@@ -5,7 +5,7 @@
 [![MCP Marketplace User Review Rating Badge](https://www.deepnlp.org/api/marketplace/svg?name=mcp-tool-bench/mcptoolbenchpp)](https://www.deepnlp.org/store/ai-agent/benchmark/pub-mcp-tool-bench/mcptoolbenchp)[![AI Agent Marketplace DeepNLP](https://www.deepnlp.org/api/ai_agent_marketplace/svg?name=mcp-tool-bench/mcptoolbenchpp)](https://www.deepnlp.org/store/ai-agent/benchmark/pub-mcp-tool-bench/mcptoolbenchpp) 
 
 
-MCPToolBench++ is a large-scale, multi-domain AI Agent Tool Use Benchmark. As of June 2025, this benchmark includes over 4k+ MCP Servers from more than 45 categories collected from the MCP and GitHub communities. The dataset comprises both single-step and multi-step tool calls across different categories. And we evaluated some SOTA Agent LLMs and RAG-Based Systems. 
+MCPToolBench++ is a large-scale, multi-domain AI Agent Tool Use Benchmark. As of July 2025, this benchmark includes over 4k+ MCP Servers from more than 45 categories collected from the MCP and GitHub communities. The dataset comprises both single-step and multi-step tool calls across different categories.
 
 Notice: This repo benchmark is still WIP and more domain dataset will be released.
 
@@ -19,7 +19,7 @@ Notice: This repo benchmark is still WIP and more domain dataset will be release
 | Qwen2.5 Max | 0.7262 | 0.2749 | 0.9419 | 0.8871 | 0.6280 | 0.4600 |
 | Claude Sonnet 3.7 | 0.6503 | 0.1840 | 0.8415 | 0.8183 | 0.7280 | 0.6200 |
 | Kimi K2 Instruct | 0.8182 | 0.2524 | 0.9062 | 0.8772 | 0.7320 | 0.3680 |
-| Qwen3 Coder | 0.8866 | 0.2925 | 0.9080 | 0.8680 | 0.7180 | 0.5227 |
+| Qwen3 Coder | - | - | - | - | - | - |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
 
@@ -31,10 +31,15 @@ Notice: This repo benchmark is still WIP and more domain dataset will be release
 | Qwen2.5 Max | 0.7372 | 0.2272 | 0.6684 | 0.5277 | 0.7511 | 0.2556 |
 | Claude Sonnet | 0.5820 | 0.2748 | 0.7058 | 0.5574 | 0.7400 | 0.2311 |
 | Kimi K2 Instruct | 0.6088 | 0.2008 | 0.8071 | 0.6761 | 0.7156 | 0.2378 |
-| Qwen3 Coder | 0.7830 | 0.3054 | 0.7240 | 0.5440 | 0.7320 | 0.2860 |
+| Qwen3 Coder | - | - | - | - | - | - |
 | Claude Opus 4 | - | - | - | - | - | - |
 | Claude Sonnet 4 | - | - | - | - | - | - |
 
+
+
+![AST Evaluation MCPToolBench](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/model_performance_ast_subplots.png?raw=true)
+
+![Pass@K Evaluation MCPToolBench](https://raw.githubusercontent.com/mcp-tool-bench/MCPToolBenchPP/refs/heads/main/doc/model_performance_pass_subplots.png?raw=true)
 
 ## Introduction
 
@@ -570,7 +575,7 @@ to run local file testing.
 ```
 ## under the root directory cd ./MCPToolBenchPP
 
-mv ./data/filesystem/test_project_root ./mcp/mcp-marketplace/app/mcp_tool_use
+mv ./data/file_system/test_project_root ./mcp/mcp-marketplace/app/mcp_tool_use
 
 or
 
@@ -801,6 +806,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 Result
 
 ```
+{"success":true,"data":["{\n  \"places\": [\n    {\n      \"name\": \"Times Square\",\n      \"formatted_address\": \"Manhattan, NY 10036, United States\",\n      \"location\": {\n        \"lat\": 40.7579747,\n        \"lng\": -73.9855426\n      },\n      \"place_id\": \"ChIJmQJIxlVYwokRLgeuocVOGVU\",\n      \"rating\": 4.7,\n      \"types\": [\n        \"tourist_attraction\",\n        \"point_of_interest\",\n        \"establishment\"\n      ]\n    }\n  ]\n}"],"error":null}%                      xichen.dxc@B-80TLJGH6-2143 MCPToolBenchPP % 
+
 ```
 
 
