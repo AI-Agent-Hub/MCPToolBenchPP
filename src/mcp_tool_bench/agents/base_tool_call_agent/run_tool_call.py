@@ -10,7 +10,7 @@ from tqdm import tqdm
 import requests
 
 from src.mcp_tool_bench.global_variables import *
-from src.mcp_tool_bench.model_utils.model_provider import _global_model_provider
+from src.mcp_tool_bench.model_utils.model_provider import get_model_provider
 from src.mcp_tool_bench.evaluation.evaluation_utils import _global_tool_result_check_func_provider, base_compare_result, estimate_pass_at_k
 from src.mcp_tool_bench.common_utils import *
 from src.mcp_tool_bench.model_utils.base_api import *
@@ -190,7 +190,7 @@ def call_llm_tools_function_call_wrapper(model, kwargs):
     messages = kwargs["messages"] if "messages" in kwargs else []
     # logging.info(f"Input call_llm_tools_function_call_wrapper messages {messages}|tools {tools}")
 
-    model_provider = _global_model_provider[model] if model in _global_model_provider else None 
+    model_provider = get_model_provider(model)
     if model_provider is None:
         logging.error(f"ERROR: call_llm_tools_function_call_wrapper model {model} missing API implementation in _global_model_provider of module model_utils.model_provider")
         return None

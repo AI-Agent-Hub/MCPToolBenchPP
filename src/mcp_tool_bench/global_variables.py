@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     MISTRAL_API_KEY: Optional[str] = None
     KIMI_API_KEY: Optional[str] = None
 
+    # Custom OpenAI-compatible API settings
+    CUSTOM_OPENAI_API_KEY: Optional[str] = None
+    CUSTOM_OPENAI_BASE_URL: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=".env",  
         env_file_encoding="utf-8",
@@ -44,4 +48,3 @@ KEY_BASE_COMPARE_FUNC = "base_compare_func"
 KEY_COMPLETION = "completion"
 KEY_REASON_CONTENT = "reason"
 KEY_FUNCTION_CALL = "function_call"
-

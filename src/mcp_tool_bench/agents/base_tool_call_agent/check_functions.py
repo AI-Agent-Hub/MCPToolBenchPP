@@ -13,7 +13,7 @@ import html
 import re
 from bs4 import BeautifulSoup
 from src.mcp_tool_bench.global_variables import *
-from src.mcp_tool_bench.model_utils.model_provider import _global_model_provider
+from src.mcp_tool_bench.model_utils.model_provider import get_model_provider
 from src.mcp_tool_bench.model_utils.base_api import *
 import json
 import logging
@@ -61,7 +61,7 @@ def process_response(response_text):
     decoded_json_str = decoded_json_str.replace("```json\n", "").replace("```", "").replace("\n", "")
     return decoded_json_str
 
-def check_ast(pred_tool_result_list: List[Dict], label_result_list: List[Dict], query: str, model_name: str) -> Tuple[bool, bool]:
+def check_ast(pred_tool_result_list: List[Dict], label_result_list: List[Dict], query: str, model_name: str = MODEL_SELECTION_GPT4O) -> Tuple[bool, bool]:
     """
         Check the AST of tool calls
         model_name: required, the LLM as a judge can verify the parameters are aligned. For example, the "query" used in search tools may be 
@@ -87,7 +87,7 @@ def check_ast(pred_tool_result_list: List[Dict], label_result_list: List[Dict], 
                 }
             ]
             # print("messages: ", messages)
-            model_provider = _global_model_provider[model_name] if model_name in _global_model_provider else _global_model_provider[MODEL_SELECTION_GPT4O]
+            model_provider = get_model_provider(model_name)
             output = model_provider.api_chat(messages, wait_time=5) if model_provider is not None else {}
             raw_response = output[KEY_COMPLETION] if KEY_COMPLETION in output else ""
             # Normal chat: process string
